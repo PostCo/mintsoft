@@ -6,7 +6,10 @@ require "ostruct"
 
 module Mintsoft
   class Base < OpenStruct
+    attr_reader :original_response
+
     def initialize(attributes)
+      @original_response = deep_freeze_object(attributes)
       super to_ostruct(attributes)
     end
 
@@ -26,6 +29,17 @@ module Mintsoft
     end
 
     private
+
+    def deep_freeze_object(obj)
+      case obj
+      when Hash
+        obj.transform_values { |value| deep_freeze_object(value) }.freeze
+      when Array
+        obj.map { |item| deep_freeze_object(item) }.freeze
+      else
+        obj.respond_to?(:freeze) ? obj.freeze : obj
+      end
+    end
 
     def ostruct_to_hash(object)
       case object

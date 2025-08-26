@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "json"
+
 module Mintsoft
   module Resources
     class Returns < BaseResource
@@ -19,13 +21,11 @@ module Mintsoft
         response = post_request("/api/Return/CreateReturn/#{order_id}")
 
         if response.success?
-          # Extract return ID from ToolkitResult and create Return object
-          return_id = extract_return_id(response.body)
-          Objects::Return.new({
-            "id" => return_id,
-            "order_id" => order_id,
-            "status" => "pending"
+          # Pass entire response to Return object, let Base class handle transformation
+          enhanced_response = response.body.merge({
+            "order_id" => order_id
           })
+          Objects::Return.new(enhanced_response)
         else
           handle_error(response)
         end
@@ -39,7 +39,15 @@ module Mintsoft
         response = post_request("/api/Return/#{return_id}/AddItem", body: payload)
 
         if response.success?
-          true # Simple success indicator
+          # Ensure response.body is a Hash, parse if it's a String
+          response_data = response.body.is_a?(Hash) ? response.body : JSON.parse(response.body)
+          
+          # Return the response as a Return object with original response preserved
+          enhanced_response = response_data.merge({
+            "return_id" => return_id,
+            "item_attributes" => item_attributes
+          })
+          Objects::Return.new(enhanced_response)
         else
           handle_error(response)
         end

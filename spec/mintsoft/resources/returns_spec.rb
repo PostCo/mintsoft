@@ -33,7 +33,7 @@ RSpec.describe Mintsoft::Resources::Returns do
 
   describe "#create" do
     context "with valid order ID" do
-      it "returns Return object" do
+      it "returns Return object with original response data" do
         response_data = {"id" => 123, "result" => {"return_id" => 123}}
 
         stub_request(:post, "https://api.mintsoft.com/api/Return/CreateReturn/456")
@@ -48,7 +48,10 @@ RSpec.describe Mintsoft::Resources::Returns do
         expect(result).to be_a(Mintsoft::Objects::Return)
         expect(result.id).to eq(123)
         expect(result.order_id).to eq(456)
-        expect(result.status).to eq("pending")
+        # Test original response is preserved
+        expect(result.original_response["id"]).to eq(123)
+        expect(result.original_response["result"]).to eq({"return_id" => 123})
+        expect(result.original_response["order_id"]).to eq(456)
       end
     end
 
@@ -77,7 +80,16 @@ RSpec.describe Mintsoft::Resources::Returns do
     end
 
     context "with valid parameters" do
-      it "returns true on success" do
+      it "returns Return object with response data" do
+        response_data = {
+          "ID" => 789,
+          "Success" => true,
+          "SensitiveData" => "encrypted_data",
+          "Message" => "Item added successfully",
+          "WarningMessage" => "Stock level low",
+          "AllocatedFromReplen" => true
+        }
+
         stub_request(:post, "https://api.mintsoft.com/api/Return/456/AddItem")
           .with(body: {
             "ProductId" => 123,
@@ -86,10 +98,31 @@ RSpec.describe Mintsoft::Resources::Returns do
             "UnitValue" => 25.00,
             "Notes" => "Damaged item"
           }.to_json)
-          .to_return(status: 200, body: {success: true}.to_json)
+          .to_return(status: 200, body: response_data.to_json)
 
         result = returns_resource.add_item(456, valid_item_attributes)
-        expect(result).to be true
+        
+        expect(result).to be_a(Mintsoft::Objects::Return)
+        # Test snake_case transformation
+        expect(result.id).to eq(789)
+        expect(result.success).to be true
+        expect(result.sensitive_data).to eq("encrypted_data")
+        expect(result.message).to eq("Item added successfully")
+        expect(result.warning_message).to eq("Stock level low")
+        expect(result.allocated_from_replen).to be true
+        # return_id method returns id (789) since it exists, not the injected return_id
+        expect(result.return_id).to eq(789)
+        # But we can access the injected return_id directly  
+        expect(result.original_response["return_id"]).to eq(456)
+        
+        # Test original response is preserved with original casing
+        expect(result.original_response["ID"]).to eq(789)
+        expect(result.original_response["Success"]).to be true
+        expect(result.original_response["SensitiveData"]).to eq("encrypted_data")
+        expect(result.original_response["Message"]).to eq("Item added successfully")
+        expect(result.original_response["WarningMessage"]).to eq("Stock level low")
+        expect(result.original_response["AllocatedFromReplen"]).to be true
+        expect(result.original_response["return_id"]).to eq(456)
       end
     end
 

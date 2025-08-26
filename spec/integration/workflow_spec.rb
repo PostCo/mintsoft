@@ -98,7 +98,7 @@ RSpec.describe "Complete Mintsoft workflow" do
         }.to_json)
         .to_return(status: 200, body: {success: true}.to_json)
 
-      success = client.returns.add_item(return_obj.id, {
+      add_item_result = client.returns.add_item(return_obj.id, {
         product_id: 123,
         quantity: 2,
         reason_id: damage_reason.id,
@@ -106,7 +106,8 @@ RSpec.describe "Complete Mintsoft workflow" do
         notes: "Damaged in shipping"
       })
 
-      expect(success).to be true
+      expect(add_item_result).to be_a(Mintsoft::Objects::Return)
+      expect(add_item_result.success).to be true
     end
   end
 
