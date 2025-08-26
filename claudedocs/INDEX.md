@@ -1,93 +1,83 @@
 # Mintsoft Documentation Index
 
-## 📋 Documentation Overview
+## 📋 Overview
 
-This directory contains comprehensive documentation for the Mintsoft Ruby gem project, generated to support development and usage of the Mintsoft API wrapper.
+Complete design documentation for the Mintsoft Ruby gem - a simplified API wrapper with manual token management for 5 essential endpoints.
 
-## 📚 Documentation Structure
+## 📚 Essential Documentation
 
-### 🏗️ Project Architecture
-- **[PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md)** - Complete project structure, directory layout, and component overview
-- **[DEVELOPMENT_GUIDE.md](DEVELOPMENT_GUIDE.md)** - Development workflow, standards, and environment setup
+### 🔑 Authentication Design
+- **[AUTH_CLIENT_DESIGN.md](AUTH_CLIENT_DESIGN.md)** - AuthClient with auth resource for clean token management
+- **[MANUAL_TOKEN_DESIGN.md](MANUAL_TOKEN_DESIGN.md)** - Manual token management approach and patterns
 
-### 🔌 API Reference  
-- **[API_DOCUMENTATION.md](API_DOCUMENTATION.md)** - Planned API structure, usage examples, and implementation roadmap
+### 🏗️ Core Architecture
+- **[TOKEN_ONLY_CLIENT_DESIGN.md](TOKEN_ONLY_CLIENT_DESIGN.md)** - Main client design accepting only pre-obtained tokens
+- **[FINAL_SIMPLIFIED_DESIGN.md](FINAL_SIMPLIFIED_DESIGN.md)** - Complete simplified architecture with nested objects
 
-### 📖 User Documentation
-- **[README_ENHANCED.md](README_ENHANCED.md)** - Enhanced README with comprehensive usage guide and examples
+### 📋 Implementation & Usage
+- **[MINIMAL_IMPLEMENTATION_PLAN.md](MINIMAL_IMPLEMENTATION_PLAN.md)** - Step-by-step implementation roadmap (7 days)
+- **[USAGE_EXAMPLES.md](USAGE_EXAMPLES.md)** - Comprehensive usage examples and patterns
 
-## 🚀 Quick Navigation
+## 🚀 Quick Start
 
-### For New Developers
-1. Start with **[PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md)** to understand the codebase
-2. Follow **[DEVELOPMENT_GUIDE.md](DEVELOPMENT_GUIDE.md)** for setup and workflow
-3. Reference **[API_DOCUMENTATION.md](API_DOCUMENTATION.md)** for implementation details
+### For Implementation (Developers)
+1. **[FINAL_SIMPLIFIED_DESIGN.md](FINAL_SIMPLIFIED_DESIGN.md)** - Start here: Complete architecture overview
+2. **[AUTH_CLIENT_DESIGN.md](AUTH_CLIENT_DESIGN.md)** - Implement AuthClient first  
+3. **[MINIMAL_IMPLEMENTATION_PLAN.md](MINIMAL_IMPLEMENTATION_PLAN.md)** - Follow 7-day roadmap
+4. **[USAGE_EXAMPLES.md](USAGE_EXAMPLES.md)** - Reference implementation patterns
 
-### For Users/Integrators
-1. Read **[README_ENHANCED.md](README_ENHANCED.md)** for installation and basic usage
-2. Check **[API_DOCUMENTATION.md](API_DOCUMENTATION.md)** for detailed API reference
-
-### For Contributors
-1. Review **[DEVELOPMENT_GUIDE.md](DEVELOPMENT_GUIDE.md)** for coding standards and workflow
-2. Understand **[PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md)** for architectural context
+### For Integration (Users)
+1. **[USAGE_EXAMPLES.md](USAGE_EXAMPLES.md)** - Complete workflow examples
+2. **[AUTH_CLIENT_DESIGN.md](AUTH_CLIENT_DESIGN.md)** - Token management approach
+3. **[MANUAL_TOKEN_DESIGN.md](MANUAL_TOKEN_DESIGN.md)** - Token lifecycle strategies
 
 ## 📊 Documentation Status
 
-| Document | Status | Coverage | Last Updated |
-|----------|--------|----------|--------------|
-| PROJECT_STRUCTURE.md | ✅ Complete | 100% | Current |
-| DEVELOPMENT_GUIDE.md | ✅ Complete | 100% | Current |
-| API_DOCUMENTATION.md | 🔄 Planned | 80% | Current |
-| README_ENHANCED.md | ✅ Complete | 100% | Current |
+| Document | Status | Focus |
+|----------|--------|-------|
+| AUTH_CLIENT_DESIGN.md | ✅ Complete | Token management |
+| TOKEN_ONLY_CLIENT_DESIGN.md | ✅ Complete | Main client design |
+| FINAL_SIMPLIFIED_DESIGN.md | ✅ Complete | Overall architecture |
+| MANUAL_TOKEN_DESIGN.md | ✅ Complete | Token lifecycle |
+| USAGE_EXAMPLES.md | ✅ Complete | Implementation patterns |
+| MINIMAL_IMPLEMENTATION_PLAN.md | ✅ Complete | 7-day roadmap |
 
-## 🎯 Key Information
+## 🎯 Design Summary
 
-### Project Status
-- **Version**: 0.1.0 (Early Development)
-- **Language**: Ruby >= 3.0.0
-- **Type**: API Wrapper Gem
-- **Platform**: Mintsoft Integration
+### Key Principles
+- **Manual Token Management**: Users handle authentication lifecycle
+- **Simplified Architecture**: Only 5 essential API endpoints
+- **Clean Separation**: AuthClient for tokens, Client for API operations  
+- **No Complex Features**: No auto-renewal, caching, or retry logic
 
-### Development Environment
-- **Testing**: RSpec with modern configuration
-- **Linting**: StandardRB with auto-formatting
-- **Build**: Rake with default quality gates
-- **Console**: Interactive development with `bin/console`
+### API Endpoints
+1. `POST /api/auth` - Authentication (AuthClient)
+2. `GET /api/Order/Search` - Order search (Client)
+3. `GET /api/Return/Reasons` - Return reasons (Client)
+4. `POST /api/Return/CreateReturn/{OrderId}` - Create return (Client)
+5. `POST /api/Return/{id}/AddItem` - Add return item (Client)
 
-### Architecture Highlights
-- **Error Hierarchy**: Comprehensive error classes with context
-- **Resource Pattern**: Organized API resources (Orders, Products, Inventory, Customers)
-- **Configuration**: Flexible gem configuration with sensible defaults
-- **Testing Strategy**: VCR cassettes for API interaction testing
+### Architecture
+```
+AuthClient                    Client (token-only)
+├── Auth Resource            ├── Orders Resource
+└── AuthResponse Object       └── Returns Resource
+                            
+Objects: Order, Return (with nested items), ReturnReason
+```
 
-## 🔗 Related Resources
+### Usage Pattern
+```ruby
+# Step 1: Get token
+auth_client = Mintsoft::AuthClient.new
+token = auth_client.auth.authenticate("user", "pass")
 
-### External Links
-- **Repository**: https://github.com/Postco/mintsoft
-- **RubyGems**: [Pending Publication]
-- **Issues**: https://github.com/Postco/mintsoft/issues
-
-### Internal Project Files
-- **Gemspec**: `mintsoft.gemspec` - Gem specification and metadata
-- **Configuration**: `Rakefile` - Build tasks and quality gates
-- **Tests**: `spec/` - RSpec test suite
-- **Source**: `lib/mintsoft/` - Main implementation (to be developed)
-
-## 🔄 Maintenance
-
-### Update Schedule
-- **Documentation**: Update with each major feature addition
-- **API Reference**: Sync with implementation progress
-- **Examples**: Validate with each gem version release
-
-### Contributing to Documentation
-1. Follow project style guidelines from [DEVELOPMENT_GUIDE.md](DEVELOPMENT_GUIDE.md)
-2. Update relevant sections when adding features
-3. Maintain cross-references between documents
-4. Validate examples with actual code
+# Step 2: Use token
+client = Mintsoft::Client.new(token: token)
+orders = client.orders.search("ORD-001")
+```
 
 ---
 
-**Generated by**: Claude Code `/sc:index` command  
-**Last Updated**: Current  
-**Maintainer**: Andy Chong (andygg1996personal@gmail.com)
+**Generated by**: Claude Code `/sc:design` command  
+**Ready for Implementation**: Following MINIMAL_IMPLEMENTATION_PLAN.md
