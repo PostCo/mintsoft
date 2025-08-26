@@ -16,7 +16,6 @@ module Mintsoft
 
         response = post_request("/api/Return/CreateReturn/#{order_id}")
         response_data = handle_response(response)
-        response_data["order_id"] = order_id
 
         Objects::Return.new(response_data)
       end
@@ -28,7 +27,6 @@ module Mintsoft
         payload = format_item_payload(item_attributes)
         response = post_request("/api/Return/#{return_id}/AddItem", body: payload)
         response_data = handle_response(response)
-        response_data["return_id"] = return_id
 
         Objects::Return.new(response_data)
       end

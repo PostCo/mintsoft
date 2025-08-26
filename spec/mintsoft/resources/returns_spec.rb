@@ -47,11 +47,10 @@ RSpec.describe Mintsoft::Resources::Returns do
 
         expect(result).to be_a(Mintsoft::Objects::Return)
         expect(result.id).to eq(123)
-        expect(result.order_id).to eq(456)
+
         # Test original response is preserved
         expect(result.original_response["id"]).to eq(123)
         expect(result.original_response["result"]).to eq({"return_id" => 123})
-        expect(result.original_response["order_id"]).to eq(456)
       end
     end
 
@@ -110,10 +109,7 @@ RSpec.describe Mintsoft::Resources::Returns do
         expect(result.message).to eq("Item added successfully")
         expect(result.warning_message).to eq("Stock level low")
         expect(result.allocated_from_replen).to be true
-        # return_id field returns the injected return_id (456) since helper method removed
-        expect(result.return_id).to eq(456)
-        # But we can access the injected return_id directly
-        expect(result.original_response["return_id"]).to eq(456)
+        # return_id is not injected into the response anymore
 
         # Test original response is preserved with original casing
         expect(result.original_response["ID"]).to eq(789)
@@ -122,7 +118,6 @@ RSpec.describe Mintsoft::Resources::Returns do
         expect(result.original_response["Message"]).to eq("Item added successfully")
         expect(result.original_response["WarningMessage"]).to eq("Stock level low")
         expect(result.original_response["AllocatedFromReplen"]).to be true
-        expect(result.original_response["return_id"]).to eq(456)
       end
     end
 

@@ -84,7 +84,6 @@ RSpec.describe "Complete Mintsoft workflow" do
 
       expect(return_obj).to be_a(Mintsoft::Objects::Return)
       expect(return_obj.id).to eq(789)
-      expect(return_obj.order_id).to eq(order.id)
 
       # Step 6: Add item to return
       stub_request(:post, "https://api.mintsoft.co.uk/api/Return/#{return_obj.id}/AddItem")

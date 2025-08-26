@@ -122,7 +122,6 @@ result = client.returns.add_item(return_obj.id, {
 
 # Access return properties
 puts return_obj.id          # Direct access to return ID
-puts return_obj.order_id    # Access to associated order ID (injected by resource)
 # Note: Items data structure depends on API response format
 ```
 
@@ -173,7 +172,6 @@ return_obj = client.returns.create(order_id)
 
 # Direct property access
 return_obj.id        # Return ID from API response
-return_obj.order_id  # Associated order ID (injected by resource)
 # Note: Other properties depend on API response structure
 ```
 
@@ -189,7 +187,7 @@ puts token  # Direct token string
 client = Mintsoft::Client.new(token: token)
 
 # For re-authentication when token expires:
-token = auth_client.auth.authenticate("username", "password") 
+token = auth_client.auth.authenticate("username", "password")
 client = Mintsoft::Client.new(token: token)
 ```
 
