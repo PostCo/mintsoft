@@ -62,7 +62,7 @@ RSpec.describe Mintsoft::Resources::Orders do
       it "raises AuthenticationError for 401 response" do
         stub_request(:get, "https://api.mintsoft.com/api/Order/Search")
           .with(query: {"OrderNumber" => "ORD-123"},
-                headers: {"Authorization" => "Bearer test_token"})
+            headers: {"Authorization" => "Bearer test_token"})
           .to_return(status: 401)
 
         expect {

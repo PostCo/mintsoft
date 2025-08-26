@@ -8,15 +8,11 @@ module Mintsoft
 
         response = get_request("/api/Order/Search", params: {"OrderNumber" => order_number})
 
-        if response.success?
-          parse_orders(response.body)
+        if response.status == 404
+          [] # Return empty array for not found orders
         else
-          case response.status
-          when 404
-            [] # Return empty array for not found
-          else
-            handle_error(response)
-          end
+          response_data = handle_response(response)
+          parse_orders(response_data)
         end
       end
 

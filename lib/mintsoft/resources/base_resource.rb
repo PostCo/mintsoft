@@ -22,7 +22,8 @@ module Mintsoft
       end
 
       def handle_response(response)
-        if response.success?
+        case response.status
+        when 200..299
           response.body
         else
           handle_error(response)
@@ -30,23 +31,43 @@ module Mintsoft
       end
 
       def handle_error(response)
-        case response.status
+        error_message = extract_error_message(response.body)
+
+        error_class = case response.status
+        when 400 then ValidationError
+        when 401 then AuthenticationError
+        when 404 then NotFoundError
+        else APIError
+        end
+
+        message = build_error_message(response.status, error_message)
+        raise error_class.new(message, response: response, status_code: response.status)
+      end
+
+      def build_error_message(status, error_message)
+        case status
         when 401
-          raise AuthenticationError, "Invalid or expired token"
+          "Invalid or expired token"
         when 400
-          raise ValidationError, "Invalid request data: #{extract_error_message(response.body)}"
+          "Invalid request data: #{error_message}"
         when 404
-          raise NotFoundError, "Resource not found"
+          "Resource not found"
         else
-          raise APIError, "API error: #{response.status} - #{extract_error_message(response.body)}"
+          "API error: #{status} - #{error_message}"
         end
       end
 
-      def extract_error_message(body)
-        return body if body.is_a?(String)
-        return body["error"] || body["message"] || body.to_s if body.is_a?(Hash)
+      private
 
-        "Unknown error"
+      def extract_error_message(body)
+        case body
+        when String
+          body
+        when Hash
+          body["error"] || body["message"] || body.to_s
+        else
+          "Unknown error"
+        end
       end
     end
   end

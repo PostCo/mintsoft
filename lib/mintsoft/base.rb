@@ -10,7 +10,7 @@ module Mintsoft
 
     def initialize(attributes)
       @original_response = deep_freeze_object(attributes)
-      super to_ostruct(attributes)
+      super(to_ostruct(attributes))
     end
 
     def to_ostruct(obj)
@@ -23,9 +23,14 @@ module Mintsoft
       end
     end
 
-    # Convert back to hash without table key, including nested structures
+    # Convert back to hash representation
     def to_hash
       ostruct_to_hash(self)
+    end
+
+    # Get the raw original response data
+    def raw
+      @original_response
     end
 
     private
@@ -44,7 +49,7 @@ module Mintsoft
     def ostruct_to_hash(object)
       case object
       when OpenStruct
-        hash = object.to_h.reject { |k, _| k == :table }
+        hash = object.to_h.except(:table)
         hash.transform_keys(&:to_s).transform_values { |value| ostruct_to_hash(value) }
       when Array
         object.map { |item| ostruct_to_hash(item) }

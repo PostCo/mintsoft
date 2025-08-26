@@ -14,12 +14,18 @@ module Mintsoft
 
       # Access item properties through OpenStruct
       def item_quantities
-        items.map(&:quantity).sum
+        return 0 unless items.respond_to?(:map)
+        items.map { |item| item.respond_to?(:quantity) ? item.quantity.to_i : 0 }.sum
       end
 
-      # Convenience methods for common API response formats
+      # Convenient access to return identifier
       def return_id
-        id || return_id
+        respond_to?(:id) ? id : super
+      end
+
+      # Check if return has any items
+      def has_items?
+        items.is_a?(Array) && items.any?
       end
     end
   end

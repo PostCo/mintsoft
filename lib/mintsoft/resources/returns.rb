@@ -7,28 +7,19 @@ module Mintsoft
     class Returns < BaseResource
       def reasons
         response = get_request("/api/Return/Reasons")
-
-        if response.success?
-          parse_reasons(response.body)
-        else
-          handle_error(response)
-        end
+        response_data = handle_response(response)
+        parse_reasons(response_data)
       end
 
       def create(order_id)
         validate_order_id!(order_id)
 
         response = post_request("/api/Return/CreateReturn/#{order_id}")
+        response_data = handle_response(response)
 
-        if response.success?
-          # Pass entire response to Return object, let Base class handle transformation
-          enhanced_response = response.body.merge({
-            "order_id" => order_id
-          })
-          Objects::Return.new(enhanced_response)
-        else
-          handle_error(response)
-        end
+        # Enhance response with order context
+        enhanced_response = response_data.merge({"order_id" => order_id})
+        Objects::Return.new(enhanced_response)
       end
 
       def add_item(return_id, item_attributes)
@@ -37,20 +28,18 @@ module Mintsoft
 
         payload = format_item_payload(item_attributes)
         response = post_request("/api/Return/#{return_id}/AddItem", body: payload)
+        response_data = handle_response(response)
 
-        if response.success?
-          # Ensure response.body is a Hash, parse if it's a String
-          response_data = response.body.is_a?(Hash) ? response.body : JSON.parse(response.body)
-          
-          # Return the response as a Return object with original response preserved
-          enhanced_response = response_data.merge({
-            "return_id" => return_id,
-            "item_attributes" => item_attributes
-          })
-          Objects::Return.new(enhanced_response)
-        else
-          handle_error(response)
-        end
+        # Ensure response data is parsed correctly
+        parsed_data = response_data.is_a?(Hash) ? response_data : JSON.parse(response_data)
+
+        # Enhance response with request context
+        enhanced_response = parsed_data.merge({
+          "return_id" => return_id,
+          "item_attributes" => item_attributes
+        })
+
+        Objects::Return.new(enhanced_response)
       end
 
       private
@@ -80,8 +69,8 @@ module Mintsoft
       def extract_return_id(toolkit_result)
         # Parse ToolkitResult to extract return ID - handles various response formats
         toolkit_result.dig("result", "return_id") ||
-        toolkit_result.dig("data", "id") ||
-        toolkit_result["id"]
+          toolkit_result.dig("data", "id") ||
+          toolkit_result["id"]
       end
 
       def format_item_payload(attrs)

@@ -20,13 +20,12 @@ RSpec.describe "Complete Mintsoft workflow" do
         )
 
       auth_client = Mintsoft::AuthClient.new
-      auth_response = auth_client.auth.authenticate(username, password)
+      token_result = auth_client.auth.authenticate(username, password)
 
-      expect(auth_response.token).to eq(token)
-      expect(auth_response.expired?).to be false
+      expect(token_result).to eq(token)
 
       # Step 2: Initialize client with token
-      client = Mintsoft::Client.new(token: auth_response.token)
+      client = Mintsoft::Client.new(token: token_result)
 
       # Step 3: Search for order
       order_data = [{
@@ -128,7 +127,7 @@ RSpec.describe "Complete Mintsoft workflow" do
 
       stub_request(:get, "https://api.mintsoft.com/api/Order/Search")
         .with(query: {"OrderNumber" => order_number},
-              headers: {"Authorization" => "Bearer expired_token"})
+          headers: {"Authorization" => "Bearer expired_token"})
         .to_return(status: 401)
 
       expect {

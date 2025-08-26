@@ -63,7 +63,7 @@ module Mintsoft
         token = body.dig("token") || body.dig("access_token") || body.dig("Token")
         raise APIError, "No token found in response" unless token
 
-        AuthResponse.new(body.merge("token" => token))
+        token
       end
 
       def handle_error_response(response)
@@ -85,20 +85,6 @@ module Mintsoft
       end
     end
 
-    class AuthResponse < Base
-      def token
-        super || access_token || Token
-      end
 
-      def expires_at
-        return nil unless expires_in
-
-        Time.now + expires_in.to_i
-      end
-
-      def expired?
-        expires_at && Time.now >= expires_at
-      end
-    end
   end
 end

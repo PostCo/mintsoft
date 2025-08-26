@@ -16,14 +16,7 @@ module Mintsoft
     end
 
     def connection
-      @connection ||= Faraday.new do |conn|
-        conn.url_prefix = @base_url
-        conn.options.merge!(@conn_opts)
-        conn.request :authorization, :Bearer, @token
-        conn.request :json
-        conn.response :json, content_type: "application/json"
-        conn.adapter Faraday.default_adapter
-      end
+      @connection ||= build_connection
     end
 
     def orders
@@ -32,6 +25,23 @@ module Mintsoft
 
     def returns
       @returns ||= Resources::Returns.new(self)
+    end
+
+    private
+
+    def build_connection
+      Faraday.new do |conn|
+        conn.url_prefix = @base_url
+        conn.options.merge!(@conn_opts)
+        configure_middleware(conn)
+        conn.adapter Faraday.default_adapter
+      end
+    end
+
+    def configure_middleware(conn)
+      conn.request :authorization, :Bearer, @token
+      conn.request :json
+      conn.response :json, content_type: "application/json"
     end
   end
 end

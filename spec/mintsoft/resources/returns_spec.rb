@@ -101,7 +101,7 @@ RSpec.describe Mintsoft::Resources::Returns do
           .to_return(status: 200, body: response_data.to_json)
 
         result = returns_resource.add_item(456, valid_item_attributes)
-        
+
         expect(result).to be_a(Mintsoft::Objects::Return)
         # Test snake_case transformation
         expect(result.id).to eq(789)
@@ -112,9 +112,9 @@ RSpec.describe Mintsoft::Resources::Returns do
         expect(result.allocated_from_replen).to be true
         # return_id method returns id (789) since it exists, not the injected return_id
         expect(result.return_id).to eq(789)
-        # But we can access the injected return_id directly  
+        # But we can access the injected return_id directly
         expect(result.original_response["return_id"]).to eq(456)
-        
+
         # Test original response is preserved with original casing
         expect(result.original_response["ID"]).to eq(789)
         expect(result.original_response["Success"]).to be true

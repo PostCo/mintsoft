@@ -26,7 +26,7 @@ RSpec.describe Mintsoft::AuthClient do
     let(:auth_resource) { auth_client.auth }
 
     context "with valid credentials" do
-      it "returns AuthResponse with token" do
+      it "returns token string directly" do
         stub_request(:post, "https://api.mintsoft.com/api/auth")
           .with(body: {username: "user", password: "pass"}.to_json)
           .to_return(
@@ -35,11 +35,10 @@ RSpec.describe Mintsoft::AuthClient do
             headers: {"Content-Type" => "application/json"}
           )
 
-        response = auth_resource.authenticate("user", "pass")
+        token = auth_resource.authenticate("user", "pass")
 
-        expect(response).to be_a(Mintsoft::AuthClient::AuthResponse)
-        expect(response.token).to eq("abc123")
-        expect(response.expires_in).to eq(3600)
+        expect(token).to eq("abc123")
+        expect(token).to be_a(String)
       end
     end
 
@@ -69,39 +68,5 @@ RSpec.describe Mintsoft::AuthClient do
     end
   end
 
-  describe "AuthResponse" do
-    let(:response_data) { {"token" => "abc123", "expires_in" => 3600} }
-    let(:auth_response) { Mintsoft::AuthClient::AuthResponse.new(response_data) }
 
-    describe "#token" do
-      it "returns token from response" do
-        expect(auth_response.token).to eq("abc123")
-      end
-    end
-
-    describe "#expires_at" do
-      it "calculates expiry time from expires_in" do
-        expect(auth_response.expires_at).to be_within(1).of(Time.now + 3600)
-      end
-
-      it "returns nil if no expires_in" do
-        response = Mintsoft::AuthClient::AuthResponse.new({"token" => "abc123"})
-        expect(response.expires_at).to be_nil
-      end
-    end
-
-    describe "#expired?" do
-      it "returns false for non-expired token" do
-        expect(auth_response.expired?).to be false
-      end
-
-      it "returns true for expired token" do
-        expired_response = Mintsoft::AuthClient::AuthResponse.new({
-          "token" => "abc123",
-          "expires_in" => -10
-        })
-        expect(expired_response.expired?).to be true
-      end
-    end
-  end
 end

@@ -35,10 +35,10 @@ require 'mintsoft'
 
 # Step 1: Get authentication token
 auth_client = Mintsoft::AuthClient.new
-auth_response = auth_client.auth.authenticate("username", "password")
+token = auth_client.auth.authenticate("username", "password")
 
 # Step 2: Initialize client with token
-client = Mintsoft::Client.new(token: auth_response.token)
+client = Mintsoft::Client.new(token: token)
 
 # Step 3: Search for orders
 orders = client.orders.search("ORD-2024-001")
@@ -46,13 +46,13 @@ order = orders.first
 
 # Step 4: Get return reasons
 reasons = client.returns.reasons
-damage_reason = reasons.find { |r| r.name.include?("Damage") }
+damage_reason = reasons.find { |r| r.name.include?("Damaged") && r.active? }
 
 # Step 5: Create return
-return_obj = client.returns.create(order.id)
+return_obj = client.returns.create(order.order_id)
 
 # Step 6: Add item to return
-success = client.returns.add_item(return_obj.id, {
+result = client.returns.add_item(return_obj.return_id, {
   product_id: 123,
   quantity: 2,
   reason_id: damage_reason.id,
@@ -70,10 +70,8 @@ success = client.returns.add_item(return_obj.id, {
 auth_client = Mintsoft::AuthClient.new
 
 # Authenticate and get token
-auth_response = auth_client.auth.authenticate("username", "password")
-puts auth_response.token
-puts auth_response.expires_at
-puts auth_response.expired?
+token = auth_client.auth.authenticate("username", "password")
+puts token  # Direct token string
 ```
 
 #### Client
@@ -97,9 +95,11 @@ orders = client.orders.search("ORD-123")
 
 # Access order properties
 order = orders.first
-puts order.id
-puts order.order_number
+puts order.order_id        # Convenience method for ID access
+puts order.order_ref       # Convenience method for order number/reference
 puts order.customer_id
+puts order.items_count     # Get number of items in order
+puts order.has_items?      # Check if order has items
 ```
 
 #### Returns
@@ -113,38 +113,90 @@ active_reasons = reasons.select(&:active?)
 return_obj = client.returns.create(order_id)
 
 # Add item to return
-client.returns.add_item(return_id, {
+result = client.returns.add_item(return_obj.return_id, {
   product_id: 123,
   quantity: 2,
   reason_id: reason_id,
   unit_value: 25.00,
   notes: "Optional notes"
 })
+
+# Access return properties
+puts return_obj.return_id     # Convenience method for return ID
+puts return_obj.items_count   # Number of items in return
+puts return_obj.has_items?    # Check if return has items
+puts return_obj.item_quantities # Sum of all item quantities
 ```
 
 ### Error Handling
+
+All error classes now include response context and status codes for better debugging:
 
 ```ruby
 begin
   orders = client.orders.search("ORD-123")
 rescue Mintsoft::AuthenticationError => e
-  # Token expired or invalid
+  # Token expired or invalid (401)
   puts "Authentication failed: #{e.message}"
+  puts "Status: #{e.status_code}"
 rescue Mintsoft::ValidationError => e
-  # Invalid request data
+  # Invalid request data (400)
   puts "Validation error: #{e.message}"
+  puts "Response: #{e.response.body if e.response}"
 rescue Mintsoft::NotFoundError => e
-  # Resource not found
+  # Resource not found (404)
   puts "Not found: #{e.message}"
 rescue Mintsoft::APIError => e
   # General API error
   puts "API error: #{e.message}"
+  puts "Status: #{e.status_code}"
 end
 ```
 
-### Complete Example
+### Object Methods
 
-See [examples/complete_workflow.rb](examples/complete_workflow.rb) for a full working example.
+#### Order Objects
+
+```ruby
+order = orders.first
+
+# Convenience methods
+order.order_id      # Safe access to ID
+order.order_ref     # Order number/reference
+order.has_items?    # Check for items
+order.items_count   # Number of items
+order.to_hash       # Convert to hash
+order.raw           # Original API response
+```
+
+#### Return Objects
+
+```ruby
+return_obj = client.returns.create(order_id)
+
+# Convenience methods  
+return_obj.return_id        # Safe access to return ID
+return_obj.has_items?       # Check for items
+return_obj.items_count      # Number of items
+return_obj.item_quantities  # Sum of all quantities
+return_obj.items            # Array of return items
+```
+
+### Authentication Token Management
+
+The authentication method returns the token string directly:
+
+```ruby
+token = auth_client.auth.authenticate("username", "password")
+puts token  # Direct token string
+
+# Token management in workflow
+client = Mintsoft::Client.new(token: token)
+
+# For re-authentication when token expires:
+token = auth_client.auth.authenticate("username", "password") 
+client = Mintsoft::Client.new(token: token)
+```
 
 ## Development
 
