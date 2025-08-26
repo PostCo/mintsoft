@@ -26,10 +26,11 @@ RSpec.describe Mintsoft::Client do
   end
 
   describe "#connection" do
-    it "creates Faraday connection with bearer token" do
+    it "creates Faraday connection with ms-apikey header" do
       connection = client.connection
       expect(connection).to be_a(Faraday::Connection)
       expect(connection.url_prefix.to_s).to eq("https://api.mintsoft.co.uk/")
+      expect(connection.headers["ms-apikey"]).to eq(token)
     end
   end
 

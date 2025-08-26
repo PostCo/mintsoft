@@ -127,7 +127,7 @@ RSpec.describe "Complete Mintsoft workflow" do
 
       stub_request(:get, "https://api.mintsoft.co.uk/api/Order/Search")
         .with(query: {"OrderNumber" => order_number},
-          headers: {"Authorization" => "Bearer expired_token"})
+          headers: {"ms-apikey" => "expired_token"})
         .to_return(status: 401)
 
       expect {

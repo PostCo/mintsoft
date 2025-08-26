@@ -39,7 +39,7 @@ module Mintsoft
     end
 
     def configure_middleware(conn)
-      conn.request :authorization, :Bearer, @token
+      conn.headers["ms-apikey"] = @token
       conn.request :json
       conn.response :json, content_type: "application/json"
     end

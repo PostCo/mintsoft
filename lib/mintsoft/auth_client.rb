@@ -19,7 +19,7 @@ module Mintsoft
         conn.url_prefix = @base_url
         conn.options.merge!(@conn_opts)
         conn.request :json
-        
+
         conn.adapter Faraday.default_adapter
       end
     end

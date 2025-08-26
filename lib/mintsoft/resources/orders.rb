@@ -5,7 +5,6 @@ module Mintsoft
     class Orders < BaseResource
       def search(order_number)
         validate_order_number!(order_number)
-
         response = get_request("/api/Order/Search", params: {"OrderNumber" => order_number})
 
         if response.status == 404
