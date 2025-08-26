@@ -83,7 +83,7 @@ orders = client.orders.search("ORD-2024-001")
 order = orders.first
 
 # Access properties through OpenStruct interface
-puts order.order_number  # or order.order_ref
+puts order.order_number
 puts order.customer_id
 
 reasons = client.returns.reasons

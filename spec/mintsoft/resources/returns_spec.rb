@@ -14,7 +14,7 @@ RSpec.describe Mintsoft::Resources::Returns do
         {"Id" => 2, "Name" => "Wrong Size", "Description" => "Wrong size", "Active" => true}
       ]
 
-      stub_request(:get, "https://api.mintsoft.com/api/Return/Reasons")
+      stub_request(:get, "https://api.mintsoft.co.uk/api/Return/Reasons")
         .to_return(
           status: 200,
           body: reasons_data.to_json,
@@ -36,7 +36,7 @@ RSpec.describe Mintsoft::Resources::Returns do
       it "returns Return object with original response data" do
         response_data = {"id" => 123, "result" => {"return_id" => 123}}
 
-        stub_request(:post, "https://api.mintsoft.com/api/Return/CreateReturn/456")
+        stub_request(:post, "https://api.mintsoft.co.uk/api/Return/CreateReturn/456")
           .to_return(
             status: 200,
             body: response_data.to_json,
@@ -90,7 +90,7 @@ RSpec.describe Mintsoft::Resources::Returns do
           "AllocatedFromReplen" => true
         }
 
-        stub_request(:post, "https://api.mintsoft.com/api/Return/456/AddItem")
+        stub_request(:post, "https://api.mintsoft.co.uk/api/Return/456/AddItem")
           .with(body: {
             "ProductId" => 123,
             "Quantity" => 2,
@@ -98,7 +98,7 @@ RSpec.describe Mintsoft::Resources::Returns do
             "UnitValue" => 25.00,
             "Notes" => "Damaged item"
           }.to_json)
-          .to_return(status: 200, body: response_data.to_json)
+          .to_return(status: 200, body: response_data.to_json, headers: {"Content-Type" => "application/json"})
 
         result = returns_resource.add_item(456, valid_item_attributes)
 
@@ -110,8 +110,8 @@ RSpec.describe Mintsoft::Resources::Returns do
         expect(result.message).to eq("Item added successfully")
         expect(result.warning_message).to eq("Stock level low")
         expect(result.allocated_from_replen).to be true
-        # return_id method returns id (789) since it exists, not the injected return_id
-        expect(result.return_id).to eq(789)
+        # return_id field returns the injected return_id (456) since helper method removed
+        expect(result.return_id).to eq(456)
         # But we can access the injected return_id directly
         expect(result.original_response["return_id"]).to eq(456)
 

@@ -7,7 +7,7 @@ RSpec.describe Mintsoft::AuthClient do
 
   describe "#initialize" do
     it "sets default base URL" do
-      expect(auth_client.base_url).to eq("https://api.mintsoft.com")
+      expect(auth_client.base_url).to eq("https://api.mintsoft.co.uk")
     end
 
     it "accepts custom base URL" do
@@ -26,25 +26,25 @@ RSpec.describe Mintsoft::AuthClient do
     let(:auth_resource) { auth_client.auth }
 
     context "with valid credentials" do
-      it "returns token string directly" do
-        stub_request(:post, "https://api.mintsoft.com/api/auth")
+      it "returns response body directly" do
+        stub_request(:post, "https://api.mintsoft.co.uk/api/auth")
           .with(body: {username: "user", password: "pass"}.to_json)
           .to_return(
             status: 200,
-            body: {token: "abc123", expires_in: 3600}.to_json,
-            headers: {"Content-Type" => "application/json"}
+            body: "abc123",
+            headers: {"Content-Type" => "application/json; charset=utf-8"}
           )
 
-        token = auth_resource.authenticate("user", "pass")
+        response_body = auth_resource.authenticate("user", "pass")
 
-        expect(token).to eq("abc123")
-        expect(token).to be_a(String)
+        expect(response_body).to eq("abc123")
+        expect(response_body).to be_a(String)
       end
     end
 
     context "with invalid credentials" do
       it "raises AuthenticationError" do
-        stub_request(:post, "https://api.mintsoft.com/api/auth")
+        stub_request(:post, "https://api.mintsoft.co.uk/api/auth")
           .to_return(status: 401, body: {error: "Invalid credentials"}.to_json)
 
         expect {
@@ -67,6 +67,4 @@ RSpec.describe Mintsoft::AuthClient do
       end
     end
   end
-
-
 end

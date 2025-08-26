@@ -5,7 +5,7 @@ require "faraday/net_http"
 
 module Mintsoft
   class AuthClient
-    BASE_URL = "https://api.mintsoft.com"
+    BASE_URL = "https://api.mintsoft.co.uk"
 
     attr_reader :base_url, :conn_opts
 
@@ -19,7 +19,7 @@ module Mintsoft
         conn.url_prefix = @base_url
         conn.options.merge!(@conn_opts)
         conn.request :json
-        conn.response :json, content_type: "application/json"
+        
         conn.adapter Faraday.default_adapter
       end
     end
@@ -46,7 +46,7 @@ module Mintsoft
         end
 
         if response.success?
-          handle_success_response(response.body)
+          response.body
         else
           handle_error_response(response)
         end
@@ -57,13 +57,6 @@ module Mintsoft
       def validate_credentials!(username, password)
         raise ValidationError, "Username required" if username.nil? || username.empty?
         raise ValidationError, "Password required" if password.nil? || password.empty?
-      end
-
-      def handle_success_response(body)
-        token = body.dig("token") || body.dig("access_token") || body.dig("Token")
-        raise APIError, "No token found in response" unless token
-
-        token
       end
 
       def handle_error_response(response)
@@ -84,7 +77,5 @@ module Mintsoft
         "Unknown error"
       end
     end
-
-
   end
 end

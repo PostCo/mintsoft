@@ -15,7 +15,7 @@ RSpec.describe Mintsoft::Resources::Orders do
           {"Id" => 2, "OrderNumber" => "ORD-124", "CustomerID" => 789}
         ]
 
-        stub_request(:get, "https://api.mintsoft.com/api/Order/Search")
+        stub_request(:get, "https://api.mintsoft.co.uk/api/Order/Search")
           .with(query: {"OrderNumber" => "ORD-123"})
           .to_return(
             status: 200,
@@ -35,7 +35,7 @@ RSpec.describe Mintsoft::Resources::Orders do
 
     context "when order not found" do
       it "returns empty array for 404 response" do
-        stub_request(:get, "https://api.mintsoft.com/api/Order/Search")
+        stub_request(:get, "https://api.mintsoft.co.uk/api/Order/Search")
           .with(query: {"OrderNumber" => "NOTFOUND"})
           .to_return(status: 404)
 
@@ -60,7 +60,7 @@ RSpec.describe Mintsoft::Resources::Orders do
 
     context "with authentication error" do
       it "raises AuthenticationError for 401 response" do
-        stub_request(:get, "https://api.mintsoft.com/api/Order/Search")
+        stub_request(:get, "https://api.mintsoft.co.uk/api/Order/Search")
           .with(query: {"OrderNumber" => "ORD-123"},
             headers: {"Authorization" => "Bearer test_token"})
           .to_return(status: 401)

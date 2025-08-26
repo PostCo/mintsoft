@@ -49,10 +49,10 @@ reasons = client.returns.reasons
 damage_reason = reasons.find { |r| r.name.include?("Damaged") && r.active? }
 
 # Step 5: Create return
-return_obj = client.returns.create(order.order_id)
+return_obj = client.returns.create(order.id)
 
 # Step 6: Add item to return
-result = client.returns.add_item(return_obj.return_id, {
+result = client.returns.add_item(return_obj.id, {
   product_id: 123,
   quantity: 2,
   reason_id: damage_reason.id,
@@ -95,11 +95,10 @@ orders = client.orders.search("ORD-123")
 
 # Access order properties
 order = orders.first
-puts order.order_id        # Convenience method for ID access
-puts order.order_ref       # Convenience method for order number/reference
-puts order.customer_id
-puts order.items_count     # Get number of items in order
-puts order.has_items?      # Check if order has items
+puts order.id              # Direct access to order ID
+puts order.order_number    # Direct access to order number
+puts order.customer_id     # Direct access to customer ID
+puts order.items&.length || 0  # Get number of items if available
 ```
 
 #### Returns
@@ -113,7 +112,7 @@ active_reasons = reasons.select(&:active?)
 return_obj = client.returns.create(order_id)
 
 # Add item to return
-result = client.returns.add_item(return_obj.return_id, {
+result = client.returns.add_item(return_obj.id, {
   product_id: 123,
   quantity: 2,
   reason_id: reason_id,
@@ -122,10 +121,9 @@ result = client.returns.add_item(return_obj.return_id, {
 })
 
 # Access return properties
-puts return_obj.return_id     # Convenience method for return ID
-puts return_obj.items_count   # Number of items in return
-puts return_obj.has_items?    # Check if return has items
-puts return_obj.item_quantities # Sum of all item quantities
+puts return_obj.id          # Direct access to return ID
+puts return_obj.order_id    # Access to associated order ID (injected by resource)
+# Note: Items data structure depends on API response format
 ```
 
 ### Error Handling
@@ -160,11 +158,10 @@ end
 ```ruby
 order = orders.first
 
-# Convenience methods
-order.order_id      # Safe access to ID
-order.order_ref     # Order number/reference
-order.has_items?    # Check for items
-order.items_count   # Number of items
+# Direct property access
+order.id            # Order ID
+order.order_number  # Order number
+order.customer_id   # Customer ID
 order.to_hash       # Convert to hash
 order.raw           # Original API response
 ```
@@ -174,12 +171,10 @@ order.raw           # Original API response
 ```ruby
 return_obj = client.returns.create(order_id)
 
-# Convenience methods  
-return_obj.return_id        # Safe access to return ID
-return_obj.has_items?       # Check for items
-return_obj.items_count      # Number of items
-return_obj.item_quantities  # Sum of all quantities
-return_obj.items            # Array of return items
+# Direct property access
+return_obj.id        # Return ID from API response
+return_obj.order_id  # Associated order ID (injected by resource)
+# Note: Other properties depend on API response structure
 ```
 
 ### Authentication Token Management

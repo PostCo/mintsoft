@@ -11,12 +11,12 @@ RSpec.describe "Complete Mintsoft workflow" do
   describe "Token management and API operations" do
     it "completes the full workflow from authentication to return creation" do
       # Step 1: Authentication
-      stub_request(:post, "https://api.mintsoft.com/api/auth")
+      stub_request(:post, "https://api.mintsoft.co.uk/api/auth")
         .with(body: {username: username, password: password}.to_json)
         .to_return(
           status: 200,
-          body: {token: token, expires_in: 3600}.to_json,
-          headers: {"Content-Type" => "application/json"}
+          body: token,
+          headers: {"Content-Type" => "application/json; charset=utf-8"}
         )
 
       auth_client = Mintsoft::AuthClient.new
@@ -35,7 +35,7 @@ RSpec.describe "Complete Mintsoft workflow" do
         "Status" => "Fulfilled"
       }]
 
-      stub_request(:get, "https://api.mintsoft.com/api/Order/Search")
+      stub_request(:get, "https://api.mintsoft.co.uk/api/Order/Search")
         .with(query: {"OrderNumber" => order_number})
         .to_return(
           status: 200,
@@ -56,7 +56,7 @@ RSpec.describe "Complete Mintsoft workflow" do
         {"Id" => 2, "Name" => "Wrong Size", "Description" => "Wrong size", "Active" => true}
       ]
 
-      stub_request(:get, "https://api.mintsoft.com/api/Return/Reasons")
+      stub_request(:get, "https://api.mintsoft.co.uk/api/Return/Reasons")
         .to_return(
           status: 200,
           body: reasons_data.to_json,
@@ -73,7 +73,7 @@ RSpec.describe "Complete Mintsoft workflow" do
       # Step 5: Create return
       return_response_data = {"id" => 789, "result" => {"return_id" => 789}}
 
-      stub_request(:post, "https://api.mintsoft.com/api/Return/CreateReturn/#{order.id}")
+      stub_request(:post, "https://api.mintsoft.co.uk/api/Return/CreateReturn/#{order.id}")
         .to_return(
           status: 200,
           body: return_response_data.to_json,
@@ -87,7 +87,7 @@ RSpec.describe "Complete Mintsoft workflow" do
       expect(return_obj.order_id).to eq(order.id)
 
       # Step 6: Add item to return
-      stub_request(:post, "https://api.mintsoft.com/api/Return/#{return_obj.id}/AddItem")
+      stub_request(:post, "https://api.mintsoft.co.uk/api/Return/#{return_obj.id}/AddItem")
         .with(body: {
           "ProductId" => 123,
           "Quantity" => 2,
@@ -95,7 +95,7 @@ RSpec.describe "Complete Mintsoft workflow" do
           "UnitValue" => 25.00,
           "Notes" => "Damaged in shipping"
         }.to_json)
-        .to_return(status: 200, body: {success: true}.to_json)
+        .to_return(status: 200, body: {success: true}.to_json, headers: {"Content-Type" => "application/json"})
 
       add_item_result = client.returns.add_item(return_obj.id, {
         product_id: 123,
@@ -112,7 +112,7 @@ RSpec.describe "Complete Mintsoft workflow" do
 
   describe "Error handling in workflow" do
     it "handles authentication failure gracefully" do
-      stub_request(:post, "https://api.mintsoft.com/api/auth")
+      stub_request(:post, "https://api.mintsoft.co.uk/api/auth")
         .to_return(status: 401, body: {error: "Invalid credentials"}.to_json)
 
       auth_client = Mintsoft::AuthClient.new
@@ -125,7 +125,7 @@ RSpec.describe "Complete Mintsoft workflow" do
     it "handles expired token gracefully" do
       client = Mintsoft::Client.new(token: "expired_token")
 
-      stub_request(:get, "https://api.mintsoft.com/api/Order/Search")
+      stub_request(:get, "https://api.mintsoft.co.uk/api/Order/Search")
         .with(query: {"OrderNumber" => order_number},
           headers: {"Authorization" => "Bearer expired_token"})
         .to_return(status: 401)
@@ -138,7 +138,7 @@ RSpec.describe "Complete Mintsoft workflow" do
     it "handles order not found gracefully" do
       client = Mintsoft::Client.new(token: token)
 
-      stub_request(:get, "https://api.mintsoft.com/api/Order/Search")
+      stub_request(:get, "https://api.mintsoft.co.uk/api/Order/Search")
         .with(query: {"OrderNumber" => "NOTFOUND"})
         .to_return(status: 404)
 

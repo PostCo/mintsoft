@@ -16,10 +16,9 @@ module Mintsoft
 
         response = post_request("/api/Return/CreateReturn/#{order_id}")
         response_data = handle_response(response)
+        response_data["order_id"] = order_id
 
-        # Enhance response with order context
-        enhanced_response = response_data.merge({"order_id" => order_id})
-        Objects::Return.new(enhanced_response)
+        Objects::Return.new(response_data)
       end
 
       def add_item(return_id, item_attributes)
@@ -29,17 +28,9 @@ module Mintsoft
         payload = format_item_payload(item_attributes)
         response = post_request("/api/Return/#{return_id}/AddItem", body: payload)
         response_data = handle_response(response)
+        response_data["return_id"] = return_id
 
-        # Ensure response data is parsed correctly
-        parsed_data = response_data.is_a?(Hash) ? response_data : JSON.parse(response_data)
-
-        # Enhance response with request context
-        enhanced_response = parsed_data.merge({
-          "return_id" => return_id,
-          "item_attributes" => item_attributes
-        })
-
-        Objects::Return.new(enhanced_response)
+        Objects::Return.new(response_data)
       end
 
       private

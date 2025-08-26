@@ -5,7 +5,7 @@ require "faraday/net_http"
 
 module Mintsoft
   class Client
-    BASE_URL = "https://api.mintsoft.com"
+    BASE_URL = "https://api.mintsoft.co.uk"
 
     attr_reader :token, :base_url, :conn_opts
 

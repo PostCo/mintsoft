@@ -16,7 +16,7 @@ RSpec.describe Mintsoft::Client do
     end
 
     it "sets default base URL" do
-      expect(client.base_url).to eq("https://api.mintsoft.com")
+      expect(client.base_url).to eq("https://api.mintsoft.co.uk")
     end
 
     it "accepts custom base URL" do
@@ -29,7 +29,7 @@ RSpec.describe Mintsoft::Client do
     it "creates Faraday connection with bearer token" do
       connection = client.connection
       expect(connection).to be_a(Faraday::Connection)
-      expect(connection.url_prefix.to_s).to eq("https://api.mintsoft.com/")
+      expect(connection.url_prefix.to_s).to eq("https://api.mintsoft.co.uk/")
     end
   end
 
