@@ -46,7 +46,12 @@ module Mintsoft
         end
 
         if response.success?
-          response.body
+          # the response body is like "\"xxxx-xx-xxxx\""
+          if response.body.start_with?('"') && response.body.end_with?('"')
+            response.body.gsub(/^["']|["']$/, "")
+          else
+            response.body
+          end
         else
           handle_error_response(response)
         end
