@@ -49,7 +49,7 @@ RSpec.describe Mintsoft::AuthClient do
 
         expect {
           auth_resource.authenticate("user", "wrongpass")
-        }.to raise_error(Mintsoft::AuthenticationError, "Invalid credentials")
+        }.to raise_error(Mintsoft::AuthClient::AuthenticationError, "Invalid credentials")
       end
     end
 

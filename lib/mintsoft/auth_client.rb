@@ -5,6 +5,9 @@ require "faraday/net_http"
 
 module Mintsoft
   class AuthClient
+    # Authentication errors specific to auth client
+    class AuthenticationError < APIError; end
+
     BASE_URL = "https://api.mintsoft.co.uk"
 
     attr_reader :base_url, :conn_opts
@@ -67,7 +70,7 @@ module Mintsoft
       def handle_error_response(response)
         case response.status
         when 401
-          raise AuthenticationError, "Invalid credentials"
+          raise AuthClient::AuthenticationError, "Invalid credentials"
         when 400
           raise ValidationError, "Invalid request: #{extract_error_message(response.body)}"
         else

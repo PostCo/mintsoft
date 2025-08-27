@@ -118,7 +118,7 @@ RSpec.describe "Complete Mintsoft workflow" do
 
       expect {
         auth_client.auth.authenticate("bad_user", "bad_pass")
-      }.to raise_error(Mintsoft::AuthenticationError, "Invalid credentials")
+      }.to raise_error(Mintsoft::AuthClient::AuthenticationError, "Invalid credentials")
     end
 
     it "handles expired token gracefully" do

@@ -15,6 +15,7 @@ module Mintsoft
   # General API-related errors
   class APIError < Error; end
 
+
   # Authentication and authorization errors
   class AuthenticationError < APIError; end
 
