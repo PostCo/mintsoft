@@ -55,21 +55,8 @@ module Mintsoft
         data.map { |reason_data| Objects::ReturnReason.new(reason_data) }
       end
 
-      def extract_return_id(toolkit_result)
-        # Parse ToolkitResult to extract return ID - handles various response formats
-        toolkit_result.dig("result", "return_id") ||
-          toolkit_result.dig("data", "id") ||
-          toolkit_result["id"]
-      end
-
       def format_item_payload(attrs)
-        {
-          "ProductId" => attrs[:product_id],
-          "Quantity" => attrs[:quantity],
-          "ReasonId" => attrs[:reason_id],
-          "UnitValue" => attrs[:unit_value],
-          "Notes" => attrs[:notes]
-        }.compact
+        attrs.transform_keys { |x| x.to_s.camelcase }
       end
     end
   end
