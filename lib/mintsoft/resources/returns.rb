@@ -42,7 +42,7 @@ module Mintsoft
       end
 
       def validate_item_attributes!(attrs)
-        required = [:product_id, :quantity, :reason_id]
+        required = [:product_id, :quantity]
         required.each do |field|
           raise ValidationError, "#{field} required" unless attrs[field]
         end
