@@ -31,6 +31,15 @@ module Mintsoft
         Objects::Return.new(response_data)
       end
 
+      def retrieve(return_id)
+        validate_return_id!(return_id)
+
+        response = get_request("/api/Return/#{return_id}")
+        response_data = handle_response(response)
+
+        Objects::Return.new(response_data)
+      end
+
       private
 
       def validate_order_id!(order_id)

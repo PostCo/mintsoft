@@ -145,4 +145,86 @@ RSpec.describe Mintsoft::Resources::Returns do
       end
     end
   end
+
+  describe "#retrieve" do
+    context "with valid return ID" do
+      it "returns Return object with response data" do
+        response_data = {
+          "ID" => 123,
+          "OrderID" => 456,
+          "Status" => "Pending",
+          "CreatedDate" => "2024-01-15T10:30:00Z",
+          "CustomerName" => "John Doe",
+          "TotalValue" => 150.00
+        }
+
+        stub_request(:get, "https://api.mintsoft.co.uk/api/Return/123")
+          .to_return(
+            status: 200,
+            body: response_data.to_json,
+            headers: {"Content-Type" => "application/json"}
+          )
+
+        result = returns_resource.retrieve(123)
+
+        expect(result).to be_a(Mintsoft::Objects::Return)
+        expect(result.id).to eq(123)
+        expect(result.order_id).to eq(456)
+        expect(result.status).to eq("Pending")
+        expect(result.created_date).to eq("2024-01-15T10:30:00Z")
+        expect(result.customer_name).to eq("John Doe")
+        expect(result.total_value).to eq(150.00)
+
+        # Test original response is preserved with original casing
+        expect(result.original_response["ID"]).to eq(123)
+        expect(result.original_response["OrderID"]).to eq(456)
+        expect(result.original_response["Status"]).to eq("Pending")
+        expect(result.original_response["CreatedDate"]).to eq("2024-01-15T10:30:00Z")
+        expect(result.original_response["CustomerName"]).to eq("John Doe")
+        expect(result.original_response["TotalValue"]).to eq(150.00)
+      end
+    end
+
+    context "with invalid return ID" do
+      it "raises ValidationError for invalid return ID" do
+        expect {
+          returns_resource.retrieve(0)
+        }.to raise_error(Mintsoft::ValidationError, "Return ID required")
+
+        expect {
+          returns_resource.retrieve(nil)
+        }.to raise_error(Mintsoft::ValidationError, "Return ID required")
+      end
+    end
+
+    context "with non-existent return ID" do
+      it "raises NotFoundError for 404 response" do
+        stub_request(:get, "https://api.mintsoft.co.uk/api/Return/999")
+          .to_return(
+            status: 404,
+            body: {"error" => "Return not found"}.to_json,
+            headers: {"Content-Type" => "application/json"}
+          )
+
+        expect {
+          returns_resource.retrieve(999)
+        }.to raise_error(Mintsoft::NotFoundError, "Resource not found")
+      end
+    end
+
+    context "with API error" do
+      it "raises appropriate error for other status codes" do
+        stub_request(:get, "https://api.mintsoft.co.uk/api/Return/123")
+          .to_return(
+            status: 500,
+            body: {"error" => "Internal server error"}.to_json,
+            headers: {"Content-Type" => "application/json"}
+          )
+
+        expect {
+          returns_resource.retrieve(123)
+        }.to raise_error(Mintsoft::APIError, /API error: 500/)
+      end
+    end
+  end
 end

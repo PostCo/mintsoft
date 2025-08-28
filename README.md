@@ -5,7 +5,7 @@ A Ruby wrapper for the Mintsoft API that provides simple token-based authenticat
 ## Features
 
 - **Token-only authentication**: Manual token management for full control
-- **5 Essential API endpoints**: Authentication, Order Search, Return Reasons, Create Returns, Add Return Items
+- **6 Essential API endpoints**: Authentication, Order Search, Return Reasons, Create Returns, Add Return Items, Retrieve Returns
 - **OpenStruct-based objects**: Flexible response handling with automatic attribute conversion
 - **Faraday HTTP client**: Robust HTTP handling with JSON support
 - **Comprehensive error handling**: Clear error messages for common scenarios
@@ -120,9 +120,16 @@ result = client.returns.add_item(return_obj.id, {
   notes: "Optional notes"
 })
 
+# Retrieve a specific return by ID
+return_obj = client.returns.retrieve(return_id)
+
 # Access return properties
 puts return_obj.id          # Direct access to return ID
-# Note: Items data structure depends on API response format
+puts return_obj.order_id    # Direct access to order ID
+puts return_obj.status      # Direct access to return status
+puts return_obj.customer_name # Direct access to customer name
+puts return_obj.total_value # Direct access to total value
+# Note: Available properties depend on API response structure
 ```
 
 ### Error Handling
