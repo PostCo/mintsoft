@@ -71,4 +71,72 @@ RSpec.describe Mintsoft::Resources::Orders do
       end
     end
   end
+
+  describe "#retrieve" do
+    context "with valid ID" do
+      it "returns Order object" do
+        order_data = {"Id" => 123, "OrderNumber" => "ORD-123", "CustomerID" => 456}
+
+        stub_request(:get, "https://api.mintsoft.co.uk/api/Order/123")
+          .to_return(
+            status: 200,
+            body: order_data.to_json,
+            headers: {"Content-Type" => "application/json"}
+          )
+
+        result = orders_resource.retrieve(123)
+
+        expect(result).to be_a(Mintsoft::Objects::Order)
+        expect(result.id).to eq(123)
+        expect(result.order_number).to eq("ORD-123")
+        expect(result.customer_id).to eq(456)
+      end
+    end
+
+    context "when order not found" do
+      it "returns nil for 404 response" do
+        stub_request(:get, "https://api.mintsoft.co.uk/api/Order/999")
+          .to_return(status: 404)
+
+        result = orders_resource.retrieve(999)
+        expect(result).to be_nil
+      end
+    end
+
+    context "with invalid ID" do
+      it "raises ValidationError for empty ID" do
+        expect {
+          orders_resource.retrieve("")
+        }.to raise_error(Mintsoft::ValidationError, "ID must be present")
+      end
+
+      it "raises ValidationError for nil ID" do
+        expect {
+          orders_resource.retrieve(nil)
+        }.to raise_error(Mintsoft::ValidationError, "ID must be present")
+      end
+    end
+
+    context "with authentication error" do
+      it "raises AuthenticationError for 401 response" do
+        stub_request(:get, "https://api.mintsoft.co.uk/api/Order/123")
+          .to_return(status: 401)
+
+        expect {
+          orders_resource.retrieve(123)
+        }.to raise_error(Mintsoft::AuthenticationError, "Invalid or expired token")
+      end
+    end
+
+    context "with other API errors" do
+      it "raises APIError for 500 response" do
+        stub_request(:get, "https://api.mintsoft.co.uk/api/Order/123")
+          .to_return(status: 500, body: "Internal Server Error")
+
+        expect {
+          orders_resource.retrieve(123)
+        }.to raise_error(Mintsoft::APIError, /API error: 500/)
+      end
+    end
+  end
 end
