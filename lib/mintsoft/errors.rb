@@ -15,12 +15,8 @@ module Mintsoft
   # General API-related errors
   class APIError < Error; end
 
-
   # Authentication and authorization errors
   class AuthenticationError < APIError; end
-
-  # Resource not found errors
-  class NotFoundError < APIError; end
 
   # Request validation errors
   class ValidationError < APIError; end

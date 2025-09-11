@@ -36,7 +36,6 @@ module Mintsoft
         error_class = case response.status
         when 400 then ValidationError
         when 401 then AuthenticationError
-        when 404 then NotFoundError
         else APIError
         end
 
@@ -50,8 +49,6 @@ module Mintsoft
           "Invalid or expired token"
         when 400
           "Invalid request data: #{error_message}"
-        when 404
-          "Resource not found"
         else
           "API error: #{status} - #{error_message}"
         end

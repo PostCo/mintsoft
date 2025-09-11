@@ -198,7 +198,7 @@ RSpec.describe Mintsoft::Resources::Returns do
     end
 
     context "with non-existent return ID" do
-      it "raises NotFoundError for 404 response" do
+      it "returns nil for 404 response" do
         stub_request(:get, "https://api.mintsoft.co.uk/api/Return/999")
           .to_return(
             status: 404,
@@ -206,9 +206,8 @@ RSpec.describe Mintsoft::Resources::Returns do
             headers: {"Content-Type" => "application/json"}
           )
 
-        expect {
-          returns_resource.retrieve(999)
-        }.to raise_error(Mintsoft::NotFoundError, "Resource not found")
+        result = returns_resource.retrieve(999)
+        expect(result).to be_nil
       end
     end
 

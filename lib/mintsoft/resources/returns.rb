@@ -35,9 +35,13 @@ module Mintsoft
         validate_return_id!(return_id)
 
         response = get_request("/api/Return/#{return_id}")
-        response_data = handle_response(response)
 
-        Objects::Return.new(response_data)
+        if response.status == 404
+          nil # Return nil for not found returns
+        else
+          response_data = handle_response(response)
+          Objects::Return.new(response_data)
+        end
       end
 
       private
