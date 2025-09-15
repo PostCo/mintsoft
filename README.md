@@ -33,32 +33,44 @@ Or install it yourself as:
 ```ruby
 require 'mintsoft'
 
-# Step 1: Get authentication token
-auth_client = Mintsoft::AuthClient.new
-token = auth_client.auth.authenticate("username", "password")
+begin
+  # Step 1: Get authentication token
+  auth_client = Mintsoft::AuthClient.new
+  token = auth_client.auth.authenticate("username", "password")
 
-# Step 2: Initialize client with token
-client = Mintsoft::Client.new(token: token)
+  # Step 2: Initialize client with token
+  client = Mintsoft::Client.new(token: token)
 
-# Step 3: Search for orders
-orders = client.orders.search("ORD-2024-001")
-order = orders.first
+  # Step 3: Search for orders
+  orders = client.orders.search("ORD-2024-001")
+  if orders.empty?
+    puts "No orders found"
+    return
+  end
+  order = orders.first
 
-# Step 4: Get return reasons
-reasons = client.returns.reasons
-damage_reason = reasons.find { |r| r.name.include?("Damaged") && r.active? }
+  # Step 4: Get return reasons
+  reasons = client.returns.reasons
+  damage_reason = reasons.find { |r| r.name.include?("Damaged") && r.active? }
 
-# Step 5: Create return
-return_obj = client.returns.create(order.id)
+  # Step 5: Create return
+  return_obj = client.returns.create(order.id)
 
-# Step 6: Add item to return
-result = client.returns.add_item(return_obj.id, {
-  product_id: 123,
-  quantity: 2,
-  reason_id: damage_reason.id,
-  unit_value: 25.00,
-  notes: "Damaged in shipping"
-})
+  # Step 6: Add item to return
+  result = client.returns.add_item(return_obj.id, {
+    product_id: 123,
+    quantity: 2,
+    reason_id: damage_reason.id,
+    unit_value: 25.00,
+    notes: "Damaged in shipping"
+  })
+rescue Mintsoft::AuthClient::AuthenticationError => e
+  puts "Authentication failed: #{e.message}"
+rescue Mintsoft::AuthenticationError => e
+  puts "Token expired: #{e.message}"
+rescue Mintsoft::ValidationError => e
+  puts "Validation error: #{e.message}"
+end
 ```
 
 ### API Reference
@@ -70,8 +82,16 @@ result = client.returns.add_item(return_obj.id, {
 auth_client = Mintsoft::AuthClient.new
 
 # Authenticate and get token
-token = auth_client.auth.authenticate("username", "password")
-puts token  # Direct token string
+begin
+  token = auth_client.auth.authenticate("username", "password")
+  puts token  # Direct token string
+rescue Mintsoft::AuthClient::AuthenticationError => e
+  # Invalid credentials when getting auth token
+  puts "Auth failed: #{e.message}"
+rescue Mintsoft::ValidationError => e
+  # Missing username or password
+  puts "Validation error: #{e.message}"
+end
 ```
 
 #### Client
@@ -92,6 +112,9 @@ client = Mintsoft::Client.new(
 ```ruby
 # Search for orders by order number
 orders = client.orders.search("ORD-123")
+
+# Retrieve specific order by ID
+order = client.orders.retrieve(order_id)
 
 # Access order properties
 order = orders.first
@@ -140,21 +163,40 @@ All error classes now include response context and status codes for better debug
 begin
   orders = client.orders.search("ORD-123")
 rescue Mintsoft::AuthenticationError => e
-  # Token expired or invalid (401)
+  # Token expired or invalid (401) - for API resource calls
   puts "Authentication failed: #{e.message}"
+  puts "Status: #{e.status_code}"
+rescue Mintsoft::AuthClient::AuthenticationError => e
+  # Invalid credentials when getting auth token
+  puts "Auth client authentication failed: #{e.message}"
   puts "Status: #{e.status_code}"
 rescue Mintsoft::ValidationError => e
   # Invalid request data (400)
   puts "Validation error: #{e.message}"
   puts "Response: #{e.response.body if e.response}"
-rescue Mintsoft::NotFoundError => e
-  # Resource not found (404)
-  puts "Not found: #{e.message}"
 rescue Mintsoft::APIError => e
   # General API error
   puts "API error: #{e.message}"
   puts "Status: #{e.status_code}"
 end
+```
+
+### Not Found Behavior
+
+When resources cannot be found, the gem returns `nil` instead of raising exceptions:
+
+```ruby
+# Search for orders - returns empty array if no orders found
+orders = client.orders.search("NONEXISTENT-ORDER")
+puts orders.empty? # true
+
+# Retrieve specific order - returns nil if not found
+order = client.orders.retrieve(99999)
+puts order.nil? # true
+
+# Retrieve specific return - returns nil if not found
+return_obj = client.returns.retrieve(99999)
+puts return_obj.nil? # true
 ```
 
 ### Object Methods
